@@ -125,42 +125,11 @@ int main(int argc, char* argv[])
                   << nanosec << std::endl;
 
         // Check data type and receive data body
-        if (strcmp(headerMsg->GetDeviceType(), "TRANSFORM") == 0)
-          {
-          ReceiveTransform(socket, headerMsg);
-          }
-        else if (strcmp(headerMsg->GetDeviceType(), "POSITION") == 0)
-          {
-          ReceivePosition(socket, headerMsg);
-          }
-        else if (strcmp(headerMsg->GetDeviceType(), "IMAGE") == 0)
-          {
-          ReceiveImage(socket, headerMsg);
-          }
-        else if (strcmp(headerMsg->GetDeviceType(), "STATUS") == 0)
-          {
-          ReceiveStatus(socket, headerMsg);
-          }
+       
 #if OpenIGTLink_PROTOCOL_VERSION >= 2
-        else if (strcmp(headerMsg->GetDeviceType(), "POINT") == 0)
+         if (strcmp(headerMsg->GetDeviceType(), "POINT") == 0)
           {
           ReceivePoint(socket, headerMsg);
-          }
-        else if (strcmp(headerMsg->GetDeviceType(), "TRAJ") == 0)
-          {
-          ReceiveTrajectory(socket, headerMsg);
-          }
-        else if (strcmp(headerMsg->GetDeviceType(), "STRING") == 0)
-          {
-          ReceiveString(socket, headerMsg);
-          }
-        else if (strcmp(headerMsg->GetDeviceType(), "BIND") == 0)
-          {
-          ReceiveBind(socket, headerMsg);
-          }
-        else if (strcmp(headerMsg->GetDeviceType(), "CAPABILITY") == 0)
-          {
-          ReceiveCapability(socket, headerMsg);
           }
 #endif //OpenIGTLink_PROTOCOL_VERSION >= 2
         else
@@ -177,7 +146,7 @@ int main(int argc, char* argv[])
   //------------------------------------------------------------
   // Close connection (The example code never reaches to this section ...)
   
-  socket->CloseSocket();
+  //socket->CloseSocket();
 
 }
 
@@ -377,6 +346,36 @@ int ReceivePoint(igtl::Socket * socket, igtl::MessageHeader * header)
       std::cerr << " Radius    : " << std::fixed << pointElement->GetRadius() << std::endl;
       std::cerr << " Owner     : " << pointElement->GetOwner() << std::endl;
       std::cerr << "================================" << std::endl;
+
+
+	  std::cerr << "Wyslanie punktu" << std::endl;
+	   igtl::PointMessage::Pointer pointMsg;
+  pointMsg = igtl::PointMessage::New();
+  pointMsg->SetDeviceName("PointSender");
+
+  igtl::PointElement::Pointer point0;
+  point0 = igtl::PointElement::New();
+  point0->SetName(pointElement->GetName());
+  point0->SetGroupName(pointElement->GetGroupName());
+  point0->SetRGBA((int)rgba[0], (int)rgba[1], (int)rgba[2], (int)rgba[3]);
+  point0->SetPosition(-pos[0], -pos[1], -pos[2]);
+  point0->SetRadius(pointElement->GetRadius());
+  point0->SetOwner(pointElement->GetOwner());
+  
+
+   pointMsg->AddPointElement(point0);
+  pointMsg->Pack();
+  
+  //------------------------------------------------------------
+  // Send
+  socket->Send(pointMsg->GetPackPointer(), pointMsg->GetPackSize());
+  
+    std::cerr << "Wyslano punkt" << std::endl;
+
+
+
+
+
       }
     }
 
